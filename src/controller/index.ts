@@ -19,6 +19,10 @@ import { CreateScriptInfo, EditScriptInfo } from "../types/script";
 
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  res.send("<h1>Hello World!<h1/>");
+});
+
 router.post("/login", async (req: Request, res: Response) => {
   const { id, password } = req.body as LoginInfo;
   if (!id || !password)
