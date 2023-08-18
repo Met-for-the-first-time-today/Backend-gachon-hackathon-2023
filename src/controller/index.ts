@@ -15,7 +15,11 @@ import {
 import AccountModel from "../model/account.model";
 import ScriptModel from "../model/script.model";
 import bcrypt from "bcrypt";
-import { CreateScriptInfo, EditScriptInfo } from "../types/script";
+import {
+  CreateScriptInfo,
+  EditScriptInfo,
+  EditSpeedInfo,
+} from "../types/script";
 
 const router = express.Router();
 
@@ -118,17 +122,20 @@ router.post("/script/create", async (req: Request, res: Response) => {
 });
 
 router.put("/script/edit", async (req: Request, res: Response) => {
-  const { token, data, index } = req.body as EditScriptInfo;
-  if (!token || !data || !index)
+  const { token, data, index, title, speed } = req.body as EditScriptInfo;
+  if (!token || !data || !index || !title || !speed)
     return res
       .status(400)
       .json(jsend.ERROR("Delivered an incorrect payload value."));
   if (!validationToken(token))
     return res.status(400).json(jsend.ERROR("invaild token"));
   const { id } = decodeToken(token) as TokenInfo;
-  const result = await ScriptModel.update({ data }, { where: { index, id } });
+  const result = await ScriptModel.update(
+    { title, data, speed },
+    { where: { index, id } }
+  );
   return Number(result) != 0
-    ? res.status(200).json(jsend.SUCCESS("update script", data))
+    ? res.status(200).json(jsend.SUCCESS("update script"))
     : res.status(400).json(jsend.ERROR("failed update script"));
 });
 
@@ -154,6 +161,25 @@ router.delete("/script/delete", async (req: Request, res: Response) => {
   return res
     .status(400)
     .json(jsend.ERROR("The index of the script to be deleted was not found."));
+});
+
+router.put("/script/edit/speed", async (req: Request, res: Response) => {
+  const { token, index, speed } = req.body as EditSpeedInfo;
+  if (!token || !index || !speed)
+    return res
+      .status(400)
+      .json(jsend.ERROR("Delivered an incorrect payload value."));
+  if (!validationToken(token))
+    return res.status(400).json(jsend.ERROR("invaild token"));
+
+  const { id } = decodeToken(token) as TokenInfo;
+  const result = await ScriptModel.update(
+    { index, speed },
+    { where: { index, id } }
+  );
+  return Number(result) != 0
+    ? res.status(200).json(jsend.SUCCESS("update script"))
+    : res.status(400).json(jsend.ERROR("failed update script"));
 });
 
 export default router;
